@@ -8,9 +8,9 @@ def createDFs():
         authDf = pd.read_csv("./data/auth.csv")
         authDf = authDf.loc[:, ~authDf.columns.str.contains('^Unnamed')]
 
-        departmentDf = pd.read_csv("./data/employees.csv")
-        departmentDf = departmentDf.loc[:, ~
-                                        departmentDf.columns.str.contains('^Unnamed')]
+        employeeDf = pd.read_csv("./data/employees.csv")
+        employeeDf = employeeDf.loc[:, ~
+                                    employeeDf.columns.str.contains('^Unnamed')]
 
     except pd.errors.EmptyDataError:
         authDf = pd.DataFrame(
@@ -18,12 +18,12 @@ def createDFs():
         authDf = authDf.loc[:, ~authDf.columns.str.contains('^Unnamed')]
         authDf.to_csv("./data/auth.csv")
 
-        departmentDf = pd.DataFrame(
+        employeeDf = pd.DataFrame(
             columns=["Name", "Post", "Salary", "Department"])
-        departmentDf = departmentDf.loc[:, ~
-                                        departmentDf.columns.str.contains('^Unnamed')]
-        departmentDf.to_csv("./data/employees.csv")
-    return authDf, departmentDf
+        employeeDf = employeeDf.loc[:, ~
+                                    employeeDf.columns.str.contains('^Unnamed')]
+        employeeDf.to_csv("./data/employees.csv")
+    return authDf, employeeDf
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     authenticated = False
     loggedInUser = None
 
-    authDf, departmentDf = createDFs()
+    authDf, employeeDf = createDFs()
 
     while True:
         print("---------------------------------")
@@ -84,47 +84,52 @@ def main():
                         name = input("Enter name :> ")
                         deptName = input("Enter department name :> ")
 
-                        if not erp.checkIfEmployeeExistsInDepartment(departmentDf, name, deptName):
+                        if not erp.checkIfEmployeeExistsInDepartment(employeeDf, name, deptName):
                             post = input("Enter post :> ")
                             salary = int(input("Enter salary :> "))
-                            departmentDf = erp.saveEmployee(
-                                departmentDf, name=name, post=post, salary=salary, department=deptName)
-                            departmentDf.to_csv("./data/employees.csv")
+                            employeeDf = erp.saveEmployee(
+                                employeeDf, name=name, post=post, salary=salary, department=deptName)
+                            employeeDf.to_csv("./data/employees.csv")
                             print("")
 
                         else:
                             print("[!] User already exists in department")
                     else:
-                        print("[i] You are not authorised.")
+                        print("[i] You are not authorized.(Either Manager/HR)")
+
                 elif erpChoice == 2:
                     name = input("Enter the user's name :> ")
-                    user = erp.getUser(departmentDf, name)
+                    user = erp.getUser(employeeDf, name)
                     print(user)
                     print("")
                 elif erpChoice == 3:
-                    print(departmentDf)
+                    print(employeeDf)
                     print("")
                 elif erpChoice == 4:
-                    name = input("Enter user's name to delete :> ")
-                    departmentDf = erp.deleteUser(departmentDf, name)
-                    departmentDf.to_csv("./data/employees.csv")
+                    if loggedInUser["Designation"].values[0] == "HR" or loggedInUser["Designation"].values[0] == "Manager":
 
-                    print("")
-                    print("[i] Deleted")
-                    print("")
+                        name = input("Enter user's name to delete :> ")
+                        employeeDf = erp.deleteUser(employeeDf, name)
+                        employeeDf.to_csv("./data/employees.csv")
+
+                        print("")
+                        print("[i] Deleted")
+                        print("")
+                    else:
+                        print("[i] You are not authorized.(Either Manager/HR)")
                 elif erpChoice == 5:
-                    print(erp.getCount(departmentDf))
+                    print(erp.getCount(employeeDf))
                 elif erpChoice == 6:
                     post = input("Enter post :> ")
                     print("")
-                    print(erp.getUsersByPost(departmentDf, post))
+                    print(erp.getUsersByPost(employeeDf, post))
                     print("")
                 elif erpChoice == 7:
                     salaryRange = input("Enter salary range(-) :> ")
                     salaryRange = salaryRange.split("-")
                     salaryRange = [int(sal) for sal in salaryRange]
                     print("")
-                    print(erp.getUsersBySalaryRange(departmentDf, salaryRange))
+                    print(erp.getUsersBySalaryRange(employeeDf, salaryRange))
                     print("")
                 elif erpChoice == 8:
                     authenticated = False
